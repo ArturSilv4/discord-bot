@@ -15,6 +15,12 @@ const {
 const { google } = require("googleapis");
 require("dotenv").config();
 
+const fs = require("fs");
+
+if (!fs.existsSync("credenciais.json")) {
+  fs.writeFileSync("credenciais.json", process.env.GOOGLE_CREDENTIALS_JSON);
+}
+
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
   partials: [Partials.Channel],
