@@ -13,20 +13,22 @@ const {
 } = require("discord.js");
 const { google } = require("googleapis");
 require("dotenv").config();
-const fs = require("fs");
-
-
-console.log("GOOGLE_CREDENTIALS_JSON:", !!process.env.GOOGLE_CREDENTIALS_JSON);
-console.log("SPREADSHEET_ID:", process.env.SPREADSHEET_ID);
-console.log("TOKEN:", !!process.env.TOKEN);
 
 // Tratamento global de erros
 process.on("unhandledRejection", err => console.error("❌ Rejeição não tratada:", err));
 process.on("uncaughtException", err => console.error("❌ Exceção não tratada:", err));
 
-// Verificação inicial de variáveis
-if (!fs.existsSync("credenciais.json") || !process.env.SPREADSHEET_ID) {
-  console.error("❌ Arquivo credenciais.json ou SPREADSHEET_ID ausente.");
+// Verificação inicial das variáveis de ambiente essenciais
+if (!process.env.GOOGLE_CREDENTIALS_JSON) {
+  console.error("❌ Variável GOOGLE_CREDENTIALS_JSON ausente.");
+  process.exit(1);
+}
+if (!process.env.SPREADSHEET_ID) {
+  console.error("❌ Variável SPREADSHEET_ID ausente.");
+  process.exit(1);
+}
+if (!process.env.TOKEN) {
+  console.error("❌ Variável TOKEN ausente.");
   process.exit(1);
 }
 
@@ -45,7 +47,7 @@ const ITEM_LIST = {
 };
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: "credenciais.json",
+  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON),
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
@@ -111,6 +113,7 @@ async function atualizarQuantidadeItem(item, novaQuantidade, aba) {
 
 client.once(Events.ClientReady, async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
+
   const guild = await client.guilds.fetch(process.env.GUILD_ID);
   const registroIds = [process.env.REGISTRO1_ID, process.env.REGISTRO2_ID];
 
@@ -153,9 +156,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         content: `📦 Selecione os itens para registrar ${tipo}:`,
         components: [new ActionRowBuilder().addComponents(select)],
       });
-    }
-
-    else if (interaction.isStringSelectMenu()) {
+    } else if (interaction.isStringSelectMenu()) {
       const tipo = interaction.customId.replace("selecao_", "");
       selecoesPendentes.set(interaction.user.id, { tipo, itens: interaction.values });
 
@@ -174,9 +175,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
 
       await interaction.showModal(modal);
-    }
-
-    else if (interaction.isModalSubmit()) {
+    } else if (interaction.isModalSubmit()) {
       const dados = selecoesPendentes.get(interaction.user.id);
       if (!dados) {
         await interaction.reply({ content: "❌ Dados não encontrados. Tente novamente.", ephemeral: true });
