@@ -15,12 +15,6 @@ const {
 const { google } = require("googleapis");
 require("dotenv").config();
 
-const fs = require("fs");
-
-if (!fs.existsSync("credenciais.json")) {
-  fs.writeFileSync("credenciais.json", process.env.GOOGLE_CREDENTIALS_JSON);
-}
-
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
   partials: [Partials.Channel],
@@ -41,9 +35,10 @@ const ITEM_LIST = {
 };
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: "credenciais.json",
+  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON),
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
+
 const sheets = google.sheets({ version: "v4", auth });
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 
