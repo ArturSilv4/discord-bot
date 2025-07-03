@@ -15,6 +15,11 @@ const { google } = require("googleapis");
 require("dotenv").config();
 const fs = require("fs");
 
+
+console.log("GOOGLE_CREDENTIALS_JSON:", !!process.env.GOOGLE_CREDENTIALS_JSON);
+console.log("SPREADSHEET_ID:", process.env.SPREADSHEET_ID);
+console.log("TOKEN:", !!process.env.TOKEN);
+
 // Tratamento global de erros
 process.on("unhandledRejection", err => console.error("❌ Rejeição não tratada:", err));
 process.on("uncaughtException", err => console.error("❌ Exceção não tratada:", err));
